@@ -1,3 +1,6 @@
+# Example
+
+```
 use rustc_hash::FxHashSet;
 use std::fs::File;
 use std::io::{self, BufRead, Read};
@@ -65,3 +68,15 @@ fn main() {
     let duration = end.duration_since(start).unwrap();
     println!("Querying took {}", duration.as_secs_f32())
 }
+```
+
+Output:
+
+```
+Reading took 1.4821113 seconds
+Indexing took 0.79744846 seconds
+Counting took 0.3936377 seconds
+Fitting TFIDF took 0.012325076 seconds
+"30005855"
+Querying took 0.015324974
+```
