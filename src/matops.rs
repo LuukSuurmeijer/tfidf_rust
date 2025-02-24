@@ -8,7 +8,6 @@ pub fn scale_csmat_by_vector(matrix: &mut CsMat<f64>, scaling_vec: &[f64]) {
         "Vector length must match the number of rows!"
     );
 
-    // Modify the matrix in place using a mutable reference
     let iterator = matrix.outer_iterator_mut().enumerate();
     for (i, mut row) in iterator {
         for (_col_idx, value) in row.iter_mut() {
