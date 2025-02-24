@@ -1,38 +1,30 @@
-use indicatif::ProgressBar;
-use rayon::prelude::*;
-use sprs::{CsMat, TriMat};
+use ndarray::Array;
+use sprs::{CsMat, CsMatView};
 
-pub fn scale_csc_by_vector(matrix: &CsMat<f64>, col_sums: &[f64]) -> CsMat<f64> {
+pub fn scale_csmat_by_vector(matrix: &mut CsMat<f64>, scaling_vec: &[f64]) {
     assert_eq!(
-        matrix.cols(),
-        col_sums.len(),
-        "Vector length must match the number of columns!"
+        matrix.shape().0,
+        scaling_vec.len(),
+        "Vector length must match the number of rows!"
     );
 
-    let bar = ProgressBar::new(matrix.cols() as u64);
-    let mut scaled_matrix = matrix.clone(); // Clone to modify
-    for (col_idx, mut col) in scaled_matrix.outer_iterator_mut().enumerate() {
-        for (_, value) in col.iter_mut() {
-            *value *= col_sums[col_idx]; // Scale by corresponding column sum
+    // Modify the matrix in place using a mutable reference
+    let iterator = matrix.outer_iterator_mut().enumerate();
+    for (i, mut row) in iterator {
+        for (_col_idx, value) in row.iter_mut() {
+            *value *= scaling_vec[i]; // Scale each row entry
         }
-        bar.inc(1);
     }
-
-    scaled_matrix
 }
 
-pub fn scale_csr_by_vector(matrix: &CsMat<f64>, col_scaling: &[f64]) -> CsMat<f64> {
-    assert_eq!(
-        matrix.cols(),
-        col_scaling.len(),
-        "Vector length must match the number of columns!"
-    );
-    let mut scaled_matrix = matrix.clone(); // Clone to modify
-    for mut row in scaled_matrix.outer_iterator_mut() {
-        for (col_idx, value) in row.iter_mut() {
-            *value *= col_scaling[col_idx]; // Scale each column entry
-        }
-    }
+pub fn diagonal_mul(
+    A: &CsMatView<f64>,
+    B: &CsMatView<f64>,
+) -> Array<f64, ndarray::Dim<[usize; 1]>> {
+    let mut result = Array::zeros(A.shape().0);
 
-    scaled_matrix
+    for ((i, A_v), B_v) in A.outer_iterator().enumerate().zip(B.outer_iterator()) {
+        result[i] = A_v.dot(B_v);
+    }
+    result
 }
